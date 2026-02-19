@@ -92,6 +92,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: BlueKeycard.blend
       objectReference: {fileID: 0}
+    - target: {fileID: 919132149155446097, guid: 8f18ba3c58280e141950ed4fd12ad376, type: 3}
+      propertyPath: m_TagString
+      value: Key
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects:
     - {fileID: 65702495048144492, guid: 8f18ba3c58280e141950ed4fd12ad376, type: 3}
@@ -102,6 +106,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8f18ba3c58280e141950ed4fd12ad376, type: 3}
       insertIndex: -1
       addedObject: {fileID: 6106801450537794223}
+    - targetCorrespondingSourceObject: {fileID: 919132149155446097, guid: 8f18ba3c58280e141950ed4fd12ad376, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 6257215245092281554}
   m_SourcePrefab: {fileID: 100100000, guid: 8f18ba3c58280e141950ed4fd12ad376, type: 3}
 --- !u!1 &2346394481788175055 stripped
 GameObject:
@@ -129,3 +136,16 @@ BoxCollider:
   serializedVersion: 3
   m_Size: {x: 1.521759, y: 1, z: 0.27000427}
   m_Center: {x: -0.26087952, y: 0, z: 0.104652405}
+--- !u!114 &6257215245092281554
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2346394481788175055}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 503b0dea329d94445b0f3f4a9910c1f0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  keyColor: Blue
