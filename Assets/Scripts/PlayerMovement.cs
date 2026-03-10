@@ -16,6 +16,7 @@ public class PlayerMovement : MonoBehaviour
     public float moveSpeed = 6f;
     public float gravity = -20f;
     Vector3 velocity;
+    Vector3 explosionVelocity;
 
     [Header("Jumping")]
     public float jumpForce = 8f;
@@ -45,9 +46,11 @@ public class PlayerMovement : MonoBehaviour
     {
         bool isGrounded = bodyController.isGrounded;
 
-        if (isGrounded && velocity.y < 0)
+        if (isGrounded)
         {
-            velocity.y = -2f;
+            if (velocity.y < 0)
+                velocity.y = -2f;
+
             jumpCount = 0;
         }
 
@@ -76,15 +79,46 @@ public class PlayerMovement : MonoBehaviour
             graphicsTransform.localPosition = new Vector3(0, standingHeight / 2f, 0);
         }
 
-        bodyController.Move(move * currentSpeed * Time.deltaTime);
-
+        // Jump
         if (Input.GetButtonDown("Jump") && jumpCount < maxJumps)
         {
             velocity.y = jumpForce;
             jumpCount++;
         }
 
+        // Gravity
         velocity.y += gravity * Time.deltaTime;
-        bodyController.Move(velocity * Time.deltaTime);
+
+        // Combine movement
+        Vector3 finalMove =
+            move * currentSpeed +
+            explosionVelocity +
+            velocity;
+
+        bodyController.Move(finalMove * Time.deltaTime);
+
+        // Decay explosion pushback
+        explosionVelocity = Vector3.Lerp(explosionVelocity, Vector3.zero, 5f * Time.deltaTime);
+    }
+
+    public void AddExplosionForce(Vector3 explosionPosition, float force, float radius)
+    {
+        // Use player's feet position instead of center
+        Vector3 playerFeet = transform.position;
+
+        Vector3 direction = playerFeet - explosionPosition;
+        float distance = direction.magnitude;
+
+        if (distance > radius)
+            return;
+
+        float falloff = 1f - (distance / radius);
+
+        Vector3 push = direction.normalized * force * falloff;
+
+        // Strong vertical boost
+        push.y = Mathf.Max(push.y, force * 0.8f * falloff);
+
+        explosionVelocity += push;
     }
 }
