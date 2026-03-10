@@ -11,6 +11,9 @@ public class DoorController : MonoBehaviour
     public bool isNormalDoor = false;
     public string requiredKey = "None";
     public bool isRoomCleared = false;
+    [Tooltip("Check this if the door should lock BEHIND the player until enemies are dead.")]
+    public bool isArenaDoor = false;
+
     [Tooltip("Drag the enemies for this specific room into this list")]
     public GameObject[] roomEnemies;
 
@@ -26,7 +29,8 @@ public class DoorController : MonoBehaviour
     private Vector3 targetPosition;
     private Vector3 startPosition;
 
-    // 1. Remember where the floor is when the game starts
+    private bool isLockedInArena = false;
+
     void Start()
     {
         if (doorMesh != null)
@@ -35,7 +39,6 @@ public class DoorController : MonoBehaviour
         }
     }
 
-    // 2. Open when entering the box
     public void OnTriggerEnter(Collider other)
     {
         if (other.CompareTag("Player"))
@@ -44,38 +47,61 @@ public class DoorController : MonoBehaviour
         }
     }
 
-    // 3. Close when leaving the box
     public void OnTriggerExit(Collider other)
     {
         if (other.CompareTag("Player") && autoClose)
         {
             CloseDoor();
+
+            // Lock the door behind the player if it's an arena door and enemies are still alive
+            if (isArenaDoor && !isLockedInArena && !AreEnemiesDead())
+            {
+                isLockedInArena = true;
+            }
         }
     }
 
     private void CheckDoorConditions(GameObject player)
     {
+        // 1. Arena Door Logic
+        if (isArenaDoor)
+        {
+            if (isLockedInArena)
+            {
+                if (AreEnemiesDead())
+                {
+                    isLockedInArena = false; // Unlock permanently
+                    OpenDoor();
+                    return;
+                }
+                else
+                {
+                    Debug.Log("Arena Locked: Defeat all enemies to escape!");
+                    return;
+                }
+            }
+            else
+            {
+                OpenDoor(); // Open freely the first time to let the player in
+                return;
+            }
+        }
+
+        // 2. Normal Door Logic
         if (isNormalDoor)
         {
             OpenDoor();
             return;
         }
 
+        // 3. Keycard Door Logic
         if (requiredKey != "None")
         {
             PlayerInventory inventory = player.GetComponent<PlayerInventory>();
 
-            if (requiredKey == "Red" && inventory.hasRedKey)
-            {
-                OpenDoor();
-                return;
-            }
-            else if (requiredKey == "Blue" && inventory.hasBlueKey)
-            {
-                OpenDoor();
-                return;
-            }
-            else if (requiredKey == "Green" && inventory.hasGreenKey)
+            if ((requiredKey == "Red" && inventory.hasRedKey) ||
+                (requiredKey == "Blue" && inventory.hasBlueKey) ||
+                (requiredKey == "Green" && inventory.hasGreenKey))
             {
                 OpenDoor();
                 return;
@@ -83,9 +109,11 @@ public class DoorController : MonoBehaviour
             else
             {
                 Debug.Log("Door Locked: You need the " + requiredKey + " key!");
+                return;
             }
         }
 
+        // 4. Pre-cleared Room Logic
         if (isRoomCleared)
         {
             if (AreEnemiesDead())
@@ -109,34 +137,26 @@ public class DoorController : MonoBehaviour
         {
             if (enemy != null)
             {
-                return false;
+                return false; // Found an enemy that is still alive
             }
         }
 
-        return true;
+        return true; // All enemies are destroyed (null)
     }
 
     private void OpenDoor()
     {
-        Debug.Log("Opening Door");
-
         targetPosition = startPosition + new Vector3(0, slideHeight, 0);
-
         isOpening = true;
-        isClosing = false; 
-
+        isClosing = false;
         this.enabled = true;
     }
 
     private void CloseDoor()
     {
-        Debug.Log("Closing Door");
-
         targetPosition = startPosition;
-
         isOpening = false;
         isClosing = true;
-
         this.enabled = true;
     }
 
@@ -155,7 +175,6 @@ public class DoorController : MonoBehaviour
                 isOpening = false;
                 isClosing = false;
                 this.enabled = false;
-                Debug.Log("Door finished moving. Script disabled.");
             }
         }
     }
