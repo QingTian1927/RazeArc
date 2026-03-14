@@ -23,6 +23,11 @@ public class SMG : WeaponBase
 
         recoilMin = new Vector3(-0.3f, -20f, 0f);
         recoilMax = new Vector3(0.3f, -30f, 0f);
+
+        kickbackAmount = 0.15f;
+        recoilKickAngle = 1.4f;
+        maxRecoilAngle = 5.5f;
+        recoilAngleRecoverySpeed = 24f;
     }
 
     protected override void Fire()

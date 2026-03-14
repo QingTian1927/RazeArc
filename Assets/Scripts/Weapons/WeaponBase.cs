@@ -28,11 +28,23 @@ public abstract class WeaponBase : MonoBehaviour
     [Header("Gun Kickback")]
     public float kickbackAmount = 0.15f;
     public float kickbackRecoverySpeed = 8f;
+    public Transform recoilPivot;
+    public float recoilKickAngle = 3.5f;
+    public float maxRecoilAngle = 12f;
+    public float recoilAngleRecoverySpeed = 16f;
     Vector3 originalLocalPosition;
+    Quaternion originalRecoilPivotLocalRotation;
+    float currentRecoilAngle;
 
     [Header("Melee Swing")]
     public float swingAngle = 60f;
     public float swingSpeed = 12f;
+    public Vector3 meleeWindupEuler = new Vector3(0f, 0f, 25f);
+    public Vector3 meleeSwingEuler = new Vector3(0f, 0f, -85f);
+    public float meleeWindupTime = 0.05f;
+    public float meleeAttackTime = 0.06f;
+    public float meleeRecoverTime = 0.14f;
+    public float meleeLungeDistance = 0.18f;
     Quaternion originalLocalRotation;
     bool isSwinging = false;
 
@@ -58,8 +70,14 @@ public abstract class WeaponBase : MonoBehaviour
             currentAmmo = magazineSize;
         }
 
+        if (recoilPivot == null)
+        {
+            recoilPivot = transform;
+        }
+
         originalLocalPosition = transform.localPosition;
         originalLocalRotation = transform.localRotation;
+        originalRecoilPivotLocalRotation = recoilPivot.localRotation;
     }
 
     void Update()
@@ -72,6 +90,22 @@ public abstract class WeaponBase : MonoBehaviour
                 transform.localPosition,
                 originalLocalPosition,
                 kickbackRecoverySpeed * Time.deltaTime
+            );
+
+            currentRecoilAngle = Mathf.MoveTowards(
+                currentRecoilAngle,
+                0f,
+                recoilAngleRecoverySpeed * Time.deltaTime
+            );
+
+            Quaternion targetRecoilRotation =
+                originalRecoilPivotLocalRotation *
+                Quaternion.Euler(-currentRecoilAngle, 0f, 0f);
+
+            recoilPivot.localRotation = Quaternion.Slerp(
+                recoilPivot.localRotation,
+                targetRecoilRotation,
+                recoilAngleRecoverySpeed * Time.deltaTime
             );
         }
     }
@@ -145,6 +179,11 @@ public abstract class WeaponBase : MonoBehaviour
                 }
 
                 transform.localPosition -= Vector3.forward * kickbackAmount;
+                currentRecoilAngle = Mathf.Clamp(
+                    currentRecoilAngle + recoilKickAngle,
+                    0f,
+                    maxRecoilAngle
+                );
             }
             else if (motionType == WeaponMotionType.Melee)
             {
@@ -211,28 +250,41 @@ public abstract class WeaponBase : MonoBehaviour
 
         Quaternion startRot = originalLocalRotation;
 
-        // downward diagonal slash
-        Quaternion swingRot = (
+        Quaternion windupRot =
             originalLocalRotation *
-            Quaternion.Euler(-90f, -5f, 15f)
-        );
-
-        float attackTime = 0.08f;
-        float recoverTime = 0.18f;
+            Quaternion.Euler(meleeWindupEuler);
+        Quaternion swingRot =
+            originalLocalRotation *
+            Quaternion.Euler(meleeSwingEuler);
 
         float t = 0;
 
-        // ATTACK (fast)
-        while (t < attackTime)
+        // WINDUP (raise knife)
+        while (t < meleeWindupTime)
         {
             t += Time.deltaTime;
-            float progress = t / attackTime;
+            float progress = t / meleeWindupTime;
+
+            transform.localPosition = originalLocalPosition;
+            transform.localRotation =
+                Quaternion.Slerp(startRot, windupRot, progress);
+
+            yield return null;
+        }
+
+        t = 0;
+
+        // ATTACK (downward slash)
+        while (t < meleeAttackTime)
+        {
+            t += Time.deltaTime;
+            float progress = t / meleeAttackTime;
 
             transform.localPosition =
-                originalLocalPosition + Vector3.forward * 0.12f;
+                originalLocalPosition + Vector3.forward * meleeLungeDistance;
 
             transform.localRotation =
-                Quaternion.Slerp(startRot, swingRot, progress);
+                Quaternion.Slerp(windupRot, swingRot, progress);
 
             yield return null;
         }
@@ -240,10 +292,10 @@ public abstract class WeaponBase : MonoBehaviour
         t = 0;
 
         // RECOVERY (slower)
-        while (t < recoverTime)
+        while (t < meleeRecoverTime)
         {
             t += Time.deltaTime;
-            float progress = t / recoverTime;
+            float progress = t / meleeRecoverTime;
 
             transform.localPosition = originalLocalPosition;
 

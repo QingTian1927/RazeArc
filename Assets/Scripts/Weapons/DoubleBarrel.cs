@@ -22,8 +22,14 @@ public class DoubleBarrel : WeaponBase
         reserveAmmo = 20;
         reloadTime = 2.5f;
 
-        recoilMin = new Vector3(-2f, -30f, 0f);
-        recoilMax = new Vector3(2f, -40f, 0f);
+        recoilMin = new Vector3(-4f, -60f, 0f);
+        recoilMax = new Vector3(4f, -80f, 0f);
+
+        kickbackAmount = 0.48f;
+        recoilKickAngle = 13f;
+        maxRecoilAngle = 40f;
+        kickbackRecoverySpeed = 5.5f;
+        recoilAngleRecoverySpeed = 9f;
     }
 
     protected override void Fire()

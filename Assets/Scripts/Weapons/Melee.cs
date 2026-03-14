@@ -24,6 +24,12 @@ public class Melee : WeaponBase
         motionType = WeaponMotionType.Melee;
         swingAngle = 80f;
         swingSpeed = 15f;
+        meleeWindupEuler = new Vector3(0f, 0f, 30f);
+        meleeSwingEuler = new Vector3(0f, 0f, -110f);
+        meleeWindupTime = 0.04f;
+        meleeAttackTime = 0.045f;
+        meleeRecoverTime = 0.12f;
+        meleeLungeDistance = 0.2f;
     }
 
     protected override void Fire()

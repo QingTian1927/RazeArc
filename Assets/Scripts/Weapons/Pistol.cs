@@ -19,8 +19,13 @@ public class Pistol : WeaponBase
         reserveAmmo = 36;
         reloadTime = 1.5f;
 
-        recoilMin = new Vector3(-0.5f, -15f, 0f);
-        recoilMax = new Vector3(0.5f, -20f, 0f);
+        recoilMin = new Vector3(-0.75f, -18f, 0f);
+        recoilMax = new Vector3(0.75f, -24f, 0f);
+
+        kickbackAmount = 0.19f;
+        recoilKickAngle = 4.4f;
+        maxRecoilAngle = 14f;
+        recoilAngleRecoverySpeed = 15f;
     }
 
     protected override void Fire()

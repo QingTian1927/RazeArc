@@ -23,8 +23,13 @@ public class RocketLauncher : WeaponBase
         reserveAmmo = 10;
         reloadTime = 2.5f;
 
-        recoilMin = new Vector3(-1f, -70f, 0f);
-        recoilMax = new Vector3(1f, -80f, 0f);
+        recoilMin = new Vector3(-2f, -100f, 0f);
+        recoilMax = new Vector3(2f, -120f, 0f);
+
+        kickbackAmount = 0.4f;
+        recoilKickAngle = 11f;
+        maxRecoilAngle = 30f;
+        recoilAngleRecoverySpeed = 12f;
     }
 
     protected override void Fire()
